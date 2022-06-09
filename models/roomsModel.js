@@ -3,7 +3,8 @@ var beats = { rock: 'scissors', scissors: 'paper', paper: 'rock' };
 
 module.exports.getAllRooms = async function() {
   try {
-    let sql = "Select * from room";
+    let sql = `Select roo_id,roo_name, crd_name as roo_topcard 
+    from room, card where roo_topcard_id = crd_id`;
     let result = await pool.query(sql);
     let rooms = result.rows;
     return { status: 200, result: rooms};
@@ -14,7 +15,8 @@ module.exports.getAllRooms = async function() {
 }  
 module.exports.getRoomById = async function (id) {
   try {
-    let sql = "Select * from room where roo_id = $1";
+    let sql = `Select roo_id,roo_name, crd_name as roo_topcard 
+    from room, card where roo_topcard_id = crd_id and roo_id = $1`;
     let result = await pool.query(sql, [id]);
     if (result.rows.length > 0) {
       let room = result.rows[0];
@@ -68,3 +70,32 @@ module.exports.play = async function (id, value) {
     return { status: 500, result: err };
   }
 }
+module.exports.getRoomByNameOrTopCard = async function (parameters) {
+  try {
+    if (!parameters.name && !parameters.topcard) {
+      return { status: 400, result: { msg: "No filters defined (name or topcard)" } };
+    }
+    let nparam = 1;
+    let values = [];
+    let sql = `Select roo_id,roo_name, crd_name as roo_topcard 
+    from room, card where roo_topcard_id = crd_id`
+
+    if (parameters.name) {
+      sql += ` and roo_name ILIKE $${nparam}`;
+      values.push("%"+parameters.name+"%");
+      nparam++;
+    }
+    if (parameters.topcard) {
+      if (parameters.name) sql+=" AND  crd_name ILIKE $${nparam} "
+      sql += ` roo_topcard LIKE $${nparam}`;
+      values.push(parameters.topcard);
+      nparam++;
+    }
+    let result = await pool.query(sql, values);
+    let rooms = result.rows;
+    return { status: 200, result: rooms };
+  } catch (err) {
+    console.log(err);
+    return { status: 500, result: err };
+  }
+}  
