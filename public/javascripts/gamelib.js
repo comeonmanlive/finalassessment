@@ -1,6 +1,6 @@
 const width = 1000;
 const height = 400;
-const room = 1;
+
 
 var boardMan;
 

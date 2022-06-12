@@ -1,9 +1,9 @@
-async function getRoom(roomId) {
+async function getRooms() {
     try {
-        const response = await fetch(`/api/rooms/${roomId}`);
+        const response = await fetch(`/api/rooms`);
         if (response.status == 200) {
-           var room = await response.json();
-           return room;
+           var rooms = await response.json();
+           return rooms;
         } else {
             // Treat errors like 404 here
             console.log(response);
@@ -12,7 +12,7 @@ async function getRoom(roomId) {
         // Treat 500 errors here
         console.log(err);
     }
-}    
+}
 async function play(roomId, card) {
     try {
         const response = await fetch(`/api/rooms/${roomId}/plays`,
